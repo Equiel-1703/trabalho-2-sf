@@ -1,3 +1,4 @@
+-- Aluno: Henrique Gabriel Rodrigues ---
 
 -- Definição das árvore sintática para representação dos programas:
 
@@ -96,15 +97,42 @@ smallStepE (Mult (Num n) e, s)         = let (el,sl) = smallStepE (e,s)
                                          in (Mult (Num n) el, sl)
 smallStepE (Mult e1 e2,s)              = let (el,sl) = smallStepE (e1,s)
                                          in (Mult el e2,sl)
--- smallStepE (Sub e1 e2,s)              =
+smallStepE (Sub (Num n1) (Num n2), s)  = (Num (n1 - n2), s)
+smallStepE (Sub (Num n1) e, s)        = let (el, sl) = smallStepE (e, s)
+                                         in (Sub (Num n1) el, sl)
+smallStepE (Sub e1 e2,s)               = let (el, sl) = smallStepE (e1, s)
+                                         in (Sub el e2, sl)
 
-
---smallStepB :: (B,Memoria) -> (B, Memoria)
--- smallStepB (Not b,s) 
---smallStepB (And b1 b2,s )  =
---smallStepB (Or b1 b2,s )  =
---smallStepB (Leq e1 e2, s) =
---smallStepB (Igual e1 e2, s) = -- recebe duas expressões aritméticas e devolve um valor booleano dizendo se são iguais
+smallStepB :: (B,Memoria) -> (B, Memoria)
+smallStepB (Not TRUE,s) = (FALSE, s)
+smallStepB (Not FALSE,s) = (TRUE, s)
+smallStepB (Not b,s) = 
+   let (bl, sl) = smallStepB (b, s)
+   in (Not bl, sl)
+smallStepB (And FALSE b2,s ) = (FALSE, s)
+smallStepB (And TRUE b2,s ) = (b2, s)
+smallStepB (And b1 b2,s ) = 
+   let (bl, sl) = smallStepB (b1, s)
+   in (And bl b2, sl)
+smallStepB (Or TRUE b2,s ) = (TRUE, s)
+smallStepB (Or FALSE b2,s ) = (b2, s)
+smallStepB (Or b1 b2,s ) =
+   let (bl, sl) = smallStepB (b1, s)
+   in (Or bl b2, sl)
+smallStepB (Leq (Num n1) (Num n2), s) = (if n1 <= n2 then TRUE else FALSE, s)
+smallStepB (Leq (Num n1) e, s) =
+   let (el, sl) = smallStepE (e, s)
+   in (Leq (Num n1) el, sl)
+smallStepB (Leq e1 e2, s) =
+   let (el, sl) = smallStepE (e1, s)
+   in (Leq el e2, sl)
+smallStepB (Igual (Num n1) (Num n2), s) = (if n1 == n2 then TRUE else FALSE, s)-- recebe duas expressões aritméticas e devolve um valor booleano dizendo se são iguais
+smallStepB (Igual (Num n1) e, s) = 
+   let (el, sl) = smallStepE (e, s)
+   in (Igual (Num n1) el, sl)
+smallStepB (Igual e1 e2, s) =
+   let (el, sl) = smallStepE (e1, s)
+   in (Igual el e2, sl)
 
 -- smallStepC :: (C,Memoria) -> (C,Memoria)
 -- smallStepC (If b c1 c2,s)  
@@ -179,6 +207,9 @@ exSigma2 = [("x",3), ("y",0), ("z",0)]
 
 progExp1 :: E
 progExp1 = Soma (Num 3) (Soma (Var "x") (Var "y"))
+
+progExp2 :: E
+progExp2 = Sub (Num 2) (Soma (Var "x") (Var "z"))
 
 ---
 --- para rodar:

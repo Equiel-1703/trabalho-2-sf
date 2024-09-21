@@ -126,7 +126,7 @@ smallStepB (Leq (Num n1) e, s) =
 smallStepB (Leq e1 e2, s) =
    let (el, sl) = smallStepE (e1, s)
    in (Leq el e2, sl)
-smallStepB (Igual (Num n1) (Num n2), s) = (if n1 == n2 then TRUE else FALSE, s)-- recebe duas expressões aritméticas e devolve um valor booleano dizendo se são iguais
+smallStepB (Igual (Num n1) (Num n2), s) = (if n1 == n2 then TRUE else FALSE, s) -- recebe duas expressões aritméticas e devolve um valor booleano dizendo se são iguais
 smallStepB (Igual (Num n1) e, s) = 
    let (el, sl) = smallStepE (e, s)
    in (Igual (Num n1) el, sl)
@@ -134,18 +134,29 @@ smallStepB (Igual e1 e2, s) =
    let (el, sl) = smallStepE (e1, s)
    in (Igual el e2, sl)
 
--- smallStepC :: (C,Memoria) -> (C,Memoria)
--- smallStepC (If b c1 c2,s)  
---smallStepC (Seq c1 c2,s)  
---smallStepC (Atrib (Var x) e,s) 
---smallStepC (While b c, s) 
---smallStepC (DoWhile c b,s) 
- -- DoWhile C B      ---- Do C While B: executa C enquanto B avalie para verdadeiro
-  -- Unless B C C   ---- Unless B C1 C2: se B avalia para falso, então executa C1, caso contrário, executa C2
-  -- Loop E C    --- Loop E C: Executa E vezes o comando C
- -- Swap E E --- recebe duas variáveis e troca o conteúdo delas
- -- DAtrrib E E E E -- Dupla atribuição: recebe duas variáveis "e1" e "e2" e duas expressões "e3" e "e4". Faz e1:=e3 e e2:=e4.
-
+smallStepC :: (C,Memoria) -> (C,Memoria)
+smallStepC (If TRUE c1 c2,s) = (c1, s)
+smallStepC (If FALSE c1 c2,s) = (c2, s)
+smallStepC (If b c1 c2,s) =
+   let (bl, sl) = smallStepB (b, s)
+   in (If bl c1 c2, sl)
+smallStepC (Seq Skip c2,s) = (c2, s)
+smallStepC (Seq c1 c2,s) =
+   let (cl, sl) = smallStepC (c1, s)
+   in (Seq cl c2, sl)
+smallStepC (Atrib (Var x) (Num n),s) = (Skip, mudaVar s x n)
+smallStepC (Atrib (Var x) e,s) = 
+   let (el, sl) = smallStepE (e, s)
+   in (Atrib (Var x) el, sl)
+smallStepC (While b c, s) = (If b (Seq c (While b c)) Skip, s)
+smallStepC (DoWhile c b,s) = (Seq c (While b c), s)
+smallStepC (Unless b c1 c2, s) = (If (Not b) c1 c2, s)                  ---- Unless B C1 C2: se B avalia para falso, então executa C1, caso contrário, executa C2
+smallStepC (Loop (Num 0) c, s) = (Skip, s)                           --- Loop E C: Executa E vezes o comando C
+smallStepC (Loop (Num n) c, s) = (Seq c (Loop (Num (n - 1)) c), s)
+smallStepC (Swap (Var v1) (Var v2), s) =                             --- recebe duas variáveis e troca o conteúdo delas
+   let sl = mudaVar s v1 (procuraVar s v2)
+   in (Skip, mudaVar sl v2 (procuraVar s v1))
+smallStepC (DAtrrib (Var v1) (Var v2) e1 e2, s) = (Seq (Atrib (Var v1) e1) (Atrib (Var v2) e2), s) -- Dupla atribuição: recebe duas variáveis "e1" e "e2" e duas expressões "e3" e "e4". Faz e1:=e3 e e2:=e4.
 
 ----------------------
 --  INTERPRETADORES
@@ -183,8 +194,8 @@ isFinalC _       = False
 
 -- Descomentar quando a função smallStepC estiver implementada:
 
---interpretadorC :: (C,Memoria) -> (C, Memoria)
---interpretadorC (c,s) = if (isFinalC c) then (c,s) else interpretadorC (smallStepC (c,s))
+interpretadorC :: (C,Memoria) -> (C, Memoria)
+interpretadorC (c,s) = if (isFinalC c) then (c,s) else interpretadorC (smallStepC (c,s))
 
 
 --------------------------------------

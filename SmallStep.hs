@@ -171,8 +171,8 @@ isFinalB _       = False
 
 -- Descomentar quanto a função smallStepB estiver implementada:
 
---interpretadorB :: (B,Memoria) -> (B, Memoria)
---interpretadorB (b,s) = if (isFinalB b) then (b,s) else interpretadorB (smallStepB (b,s))
+interpretadorB :: (B,Memoria) -> (B, Memoria)
+interpretadorB (b,s) = if (isFinalB b) then (b,s) else interpretadorB (smallStepB (b,s))
 
 
 -- Interpretador da Linguagem Imperativa

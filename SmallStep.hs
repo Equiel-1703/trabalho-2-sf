@@ -151,9 +151,8 @@ smallStepC (Atrib (Var x) e,s) =
 smallStepC (While b c, s) = (If b (Seq c (While b c)) Skip, s)
 smallStepC (DoWhile c b,s) = (Seq c (While b c), s)
 smallStepC (Unless b c1 c2, s) = (If (Not b) c1 c2, s)                  ---- Unless B C1 C2: se B avalia para falso, então executa C1, caso contrário, executa C2
-smallStepC (Loop (Num 0) c, s) = (Skip, s)                           --- Loop E C: Executa E vezes o comando C
-smallStepC (Loop (Num n) c, s) = (Seq c (Loop (Num (n - 1)) c), s)
-smallStepC (Swap (Var v1) (Var v2), s) =                             --- recebe duas variáveis e troca o conteúdo delas
+smallStepC (Loop e c, s) = (If (Leq e (Num 0)) Skip (Seq c (Loop (Sub e (Num 1)) c)), s)  --- Loop E C: Executa E vezes o comando C
+smallStepC (Swap (Var v1) (Var v2), s) =                                --- recebe duas variáveis e troca o conteúdo delas
    let sl = mudaVar s v1 (procuraVar s v2)
    in (Skip, mudaVar sl v2 (procuraVar s v1))
 smallStepC (DAtrrib (Var v1) (Var v2) e1 e2, s) = (Seq (Atrib (Var v1) e1) (Atrib (Var v2) e2), s) -- Dupla atribuição: recebe duas variáveis "e1" e "e2" e duas expressões "e3" e "e4". Faz e1:=e3 e e2:=e4.
@@ -202,11 +201,6 @@ interpretadorC (c,s) = if (isFinalC c) then (c,s) else interpretadorC (smallStep
 ---
 --- Exemplos de programas para teste
 ---
---- O ALUNO DEVE IMPLEMENTAR EXEMPLOS *** DIFERENTES *** DE PROGRAMAS QUE USEM:
---  * Unless  
---  * Loop   
---  * Swap 
---  * DAtrrib 
 
 exSigma2 :: Memoria
 exSigma2 = [("x",3), ("y",0), ("z",0)]
@@ -267,3 +261,42 @@ fatorial = (Seq (Atrib (Var "y") (Num 1))
                 (While (Not (Igual (Var "x") (Num 1)))
                        (Seq (Atrib (Var "y") (Mult (Var "y") (Var "x")))
                             (Atrib (Var "x") (Sub (Var "x") (Num 1))))))
+
+--- O ALUNO DEVE IMPLEMENTAR EXEMPLOS *** DIFERENTES *** DE PROGRAMAS QUE USEM:
+--  * Unless x
+--  * Loop x
+--  * Swap 
+--  * DAtrrib 
+
+memoriaPotencia :: Memoria
+memoriaPotencia = [("base", 2), ("exp", 3), ("res", 0)]
+
+potencia :: C
+potencia = Seq (Unless (Leq (Var "exp") (Num (-1))) (Atrib (Var "res") (Num 1)) (Atrib (Var "res") (Num 0)))
+               (Loop (Var "exp")
+                  (Atrib (Var "res") (Mult (Var "res") (Var "base")))               
+               )
+
+memoriaGetMax :: Memoria
+memoriaGetMax = [("a", 0), ("b", 0), ("c", 0), ("d", 0), ("max", 0)]
+
+getMax :: C
+getMax =    Seq
+               (Seq (DAtrrib (Var "a") (Var "b") (Num 4) (Num 2)) (DAtrrib (Var "c") (Var "d") (Num 3) (Num 1)))
+               (Seq
+                  (If (Leq (Var "b") (Var "a"))
+                     (Swap (Var "b") (Var "a"))
+                     Skip
+                  )
+               (Seq
+                  (If (Leq (Var "c") (Var "b"))
+                     (Swap (Var "c") (Var "b"))
+                     Skip
+                  )
+               (Seq
+                  (If (Leq (Var "d") (Var "c"))
+                     (Swap (Var "d") (Var "c"))
+                     Skip
+                  )
+               (Atrib (Var "max") (Var "d"))
+               )))

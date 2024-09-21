@@ -263,9 +263,9 @@ fatorial = (Seq (Atrib (Var "y") (Num 1))
                             (Atrib (Var "x") (Sub (Var "x") (Num 1))))))
 
 --- O ALUNO DEVE IMPLEMENTAR EXEMPLOS *** DIFERENTES *** DE PROGRAMAS QUE USEM:
---  * Unless x
---  * Loop x
---  * Swap 
+--  * Unless
+--  * Loop
+--  * Swap
 --  * DAtrrib 
 
 memoriaPotencia :: Memoria
